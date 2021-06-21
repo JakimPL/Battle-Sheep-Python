@@ -7,7 +7,7 @@ class UI:
     def __init__(self):
         config = Config()
         self.line = 0
-        self.tile_size = 45
+        self.tile_size = 35
 
         self.game_width = 800
         self.game_height = 600

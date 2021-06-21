@@ -42,7 +42,7 @@ class Board:
         x, y = tile
         for i in range(self._block_size):
             for j in range(self._block_size):
-                if ((x + i, y + j) in self._board) ^ outside:
+                if outside ^ ((x + i, y + j) in self._board):
                     return False
 
         return True
@@ -59,7 +59,7 @@ class Board:
                     [(x - self._block_size + i, y + 1) for i in range(1, self._block_size + 1)]
 
                 for block in block_lists:
-                    if self.is_block_inside(tile, outside=True):
+                    if self.is_block_inside(block, outside=False):
                         boundary_blocks.add(block)
 
         return random.choice(list(boundary_blocks))
@@ -75,6 +75,9 @@ class Board:
             block = self.get_random_block()
             self.fill_block(block)
             remaining_blocks -= block_tiles
+
+        if len(self._board) != blocks:
+            raise RuntimeError('generated smaller board than expected')
 
     def set(self, tile, value=Tile(0, 0)):
         self._board[tile] = value
@@ -106,12 +109,12 @@ class State:
             self.board = Board(board)
 
     def place_initial_stack(self, tile):
-        if self.initial_phase:
-            if tile in self.board and self.board(tile).player == 0:
-                self.board.set(tile, Tile(self.turn, self.stack_size))
-                self.next_turn()
-                if self.turn == 1:
-                    self.initial_phase = False
+        if self.initial_phase and tile in self.board and self.board(tile).player == 0 \
+                and self.board.is_tile_boundary(tile):
+            self.board.set(tile, Tile(self.turn, self.stack_size))
+            self.next_turn()
+            if self.turn == 1:
+                self.initial_phase = False
 
     def next_turn(self):
         self.turn += 1
