@@ -18,15 +18,23 @@ class UI:
         self.rect = self.sprite.get_rect()[2:]
         self.scale = self.tile_size / self.rect[1]
         self.new_rect = (int(self.rect[0] * self.scale), int(self.rect[1] * self.scale))
-        self.sprites = [pygame.image.load("hex_{0}.png".format(i)) for i in range(5)]
-        self.transparent_sprites = [sprite.copy() for sprite in self.sprites]
-        for i in range(5):
-            self.sprites[i] = pygame.transform.scale(self.sprites[i], self.new_rect)
-            self.transparent_sprites[i] = pygame.transform.scale(self.transparent_sprites[i], self.new_rect)
-            self.transparent_sprites[i].set_alpha(128)
+        self.sprite = pygame.transform.scale(self.sprite, self.new_rect)
 
         self.colors = config['colors']
         self.comp_colors = config['comp_colors']
+        self.turn_colors = config['turn_colors']
+
+        self.sprites = []
+        self.transparent_sprites = []
+        for i in range(7):
+            surface = pygame.Surface(self.sprite.get_size())
+            surface.fill(self.colors[i])
+            sprite = self.sprite.copy()
+            sprite.blit(surface, (0, 0), special_flags=pygame.BLEND_MULT)
+            transparent_sprite = sprite.copy()
+            transparent_sprite.set_alpha(128)
+            self.sprites.append(sprite)
+            self.transparent_sprites.append(transparent_sprite)
 
         self.font_size = config['font_size']
         self.font = pygame.font.SysFont(config['font'], self.font_size)
@@ -61,7 +69,7 @@ class UI:
         self.y_offset = (self.game_height - (max_y - min_y)) / 2 - min_y
 
     def draw_board(self, state: State, selection=None):
-        pygame.draw.rect(self.display, self.colors[state.turn], (0, 0, self.game_width, self.game_height))
+        pygame.draw.rect(self.display, self.turn_colors[state.turn], (0, 0, self.game_width, self.game_height))
 
         for tile in state.board:
             if tile in selection:

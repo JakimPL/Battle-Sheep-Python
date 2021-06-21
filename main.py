@@ -25,7 +25,11 @@ while True:
                     state.place_initial_stack(current_tile)
         else:
             if selected_tile:
-                if selected_tile != current_tile:
+                if selected_tile == current_tile:
+                    if pygame.mouse.get_pressed(3)[0]:
+                        selection = []
+                        selected_tile = None
+                else:
                     direction = ui.get_direction(selected_tile, current_tile)
                     tiles_in_direction = state.board.get_tiles_in_direction(selected_tile, direction)
                     if tiles_in_direction:
@@ -44,8 +48,8 @@ while True:
                         selection = [selected_tile]
                     elif state.board(current_tile).player == state.turn:
                         selection = [current_tile]
-                if pygame.mouse.get_pressed(3)[0]:
-                    if state.get_possible_moves(current_tile) and state.board.is_tile_movable(current_tile):
+                if state.get_possible_moves(current_tile) and state.board.is_tile_movable(current_tile):
+                    if pygame.mouse.get_pressed(3)[0]:
                         selected_tile = current_tile
                         selection = [current_tile]
 
