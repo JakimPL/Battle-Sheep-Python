@@ -20,7 +20,16 @@ class Board:
     config = Config('game')
 
     def __init__(self, board=None, block_size=config['block_size']):
-        self._board = board if board else {}
+        self._board = {}
+        if board:
+            if type(board) == dict:
+                for tile in board:
+                    player, value = board[tile]
+                    self._board[tile] = Tile(player, value)
+            elif type(board) == list:
+                for tile in board:
+                    self._board[tile] = Tile(0, 0)
+
         self._block_size = block_size
 
     def __call__(self, tile) -> Tile:
@@ -28,6 +37,9 @@ class Board:
 
     def __iter__(self):
         return self._board.__iter__()
+
+    def __len__(self):
+        return len(self._board)
 
     def get_block_size(self):
         return self._block_size

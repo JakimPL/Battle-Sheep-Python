@@ -12,7 +12,7 @@ class State:
         self.players = players
         self.stack_size = stack_size
 
-        self.turn = 1
+        self.turn = 0
         self.initial_phase = True
         self.end = False
         if board is None:
@@ -20,6 +20,12 @@ class State:
             self.board.generate_board(self.players * self.stack_size)
         else:
             self.board = Board(board)
+
+        board_size = len(self.board)
+        if self.players > board_size:
+            raise ValueError("not enough space for players")
+
+        self.next_turn()
 
     def get_possible_moves(self, chosen_tile=None, player=0):
         if player == 0:
@@ -40,9 +46,10 @@ class State:
     def place_initial_stack(self, tile):
         if self.initial_phase and self.board.is_tile_free(tile) and self.board.is_tile_boundary(tile):
             self.board.set(tile, Tile(self.turn, self.stack_size))
-            self.next_turn()
             if self.turn == 1:
                 self.initial_phase = False
+
+            self.next_turn()
 
     def move(self, starting_tile, direction, size=1):
         if direction not in DIRECTIONS:
@@ -71,6 +78,7 @@ class State:
                 return False
             else:
                 counter += 1
+
         self.turn = 0
         self.end = True
         return True
