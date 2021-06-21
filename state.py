@@ -1,12 +1,24 @@
 import random
 
 
+class Tile:
+    player = 0
+    value = 0
+
+    def __init__(self, player, value):
+        self.player = player
+        self.value = value
+
+    def __iter__(self):
+        return iter((self.player, self.value))
+
+
 class Board:
     def __init__(self, board=None, block_size=2):
         self._board = board if board else {}
         self._block_size = block_size
 
-    def __call__(self, tile):
+    def __call__(self, tile: Tile):
         return self._board[tile]
 
     def __iter__(self):
@@ -26,6 +38,15 @@ class Board:
     def is_tile_boundary(self, tile):
         return len(self.get_adjacent_tiles(tile)) < 6
 
+    def is_block_inside(self, tile, outside=False):
+        x, y = tile
+        for i in range(self._block_size):
+            for j in range(self._block_size):
+                if ((x + i, y + j) in self._board) ^ outside:
+                    return False
+
+        return True
+
     def get_random_block(self):
         boundary_blocks = set()
         for tile in self._board:
@@ -38,17 +59,7 @@ class Board:
                     [(x - self._block_size + i, y + 1) for i in range(1, self._block_size + 1)]
 
                 for block in block_lists:
-                    _x, _y = block
-                    success = True
-                    for i in range(self._block_size):
-                        for j in range(self._block_size):
-                            if (_x + i, _y + j) in self._board:
-                                success = False
-                                break
-
-                        if not success:
-                            break
-                    if success:
+                    if self.is_block_inside(tile, outside=True):
                         boundary_blocks.add(block)
 
         return random.choice(list(boundary_blocks))
@@ -65,11 +76,14 @@ class Board:
             self.fill_block(block)
             remaining_blocks -= block_tiles
 
-    def fill_block(self, tile, value=0):
+    def set(self, tile, value=Tile(0, 0)):
+        self._board[tile] = value
+
+    def fill_block(self, tile, value=Tile(0, 0)):
         x, y = tile
         for i in range(self._block_size):
             for j in range(self._block_size):
-                self._board[(x + i, y + j)] = value
+                self.set((x + i, y + j), value)
 
     def is_connected(self):
         pass
@@ -81,10 +95,25 @@ class State:
             raise ValueError('not enough players')
 
         self.players = players
-        self.turn = 1
         self.stack_size = stack_size
+
+        self.turn = 1
+        self.initial_phase = True
         if board is None:
             self.board = Board()
             self.board.generate_board(self.players * self.stack_size)
         else:
             self.board = Board(board)
+
+    def place_initial_stack(self, tile):
+        if self.initial_phase:
+            if tile in self.board and self.board(tile).player == 0:
+                self.board.set(tile, Tile(self.turn, self.stack_size))
+                self.next_turn()
+                if self.turn == 1:
+                    self.initial_phase = False
+
+    def next_turn(self):
+        self.turn += 1
+        if self.turn > self.players:
+            self.turn -= self.players
