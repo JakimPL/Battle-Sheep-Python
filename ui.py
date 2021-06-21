@@ -7,12 +7,10 @@ from config import Config
 
 class UI:
     def __init__(self):
-        config = Config()
-        self.line = 0
-        self.tile_size = 35
+        config = Config('ui')
+        self.tile_size = config['tile_size']
+        self.game_width, self.game_height = config['window_size']
 
-        self.game_width = 800
-        self.game_height = 600
         self.x_offset = 0
         self.y_offset = 0
 
@@ -27,11 +25,11 @@ class UI:
             self.transparent_sprites[i] = pygame.transform.scale(self.transparent_sprites[i], self.new_rect)
             self.transparent_sprites[i].set_alpha(128)
 
-        self.colors = [(64, 160, 64), (224, 224, 224), (32, 32, 32), (224, 64, 64), (64, 64, 224)]
-        self.comp_colors = [(32, 32, 32), (16, 16, 16), (224, 224, 224), (224, 224, 224), (224, 224, 224)]
+        self.colors = config['colors']
+        self.comp_colors = config['comp_colors']
 
-        self.font_size = 14
-        self.font = pygame.font.SysFont(config.font, self.font_size)
+        self.font_size = config['font_size']
+        self.font = pygame.font.SysFont(config['font'], self.font_size)
         self.display = pygame.display.set_mode((self.game_width, self.game_height), 0, 32)
 
     def get_position(self, position):

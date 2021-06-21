@@ -1,4 +1,5 @@
 import random
+from config import Config
 
 DIRECTIONS = [(1, -1), (1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1)]
 
@@ -16,7 +17,9 @@ class Tile:
 
 
 class Board:
-    def __init__(self, board=None, block_size=2):
+    config = Config('game')
+
+    def __init__(self, board=None, block_size=config['block_size']):
         self._board = board if board else {}
         self._block_size = block_size
 

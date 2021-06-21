@@ -1,8 +1,11 @@
 from board import Board, Tile, DIRECTIONS
+from config import Config
 
 
 class State:
-    def __init__(self, players: int, board=None, stack_size=16):
+    config = Config('game')
+
+    def __init__(self, players=config['players'], board=None, stack_size=config['stack_size']):
         if players < 1:
             raise ValueError('not enough players')
 
@@ -68,5 +71,6 @@ class State:
                 return False
             else:
                 counter += 1
+        self.turn = 0
         self.end = True
         return True
