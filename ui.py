@@ -1,4 +1,6 @@
+import math
 import pygame
+from board import Tile, DIRECTIONS
 from state import State
 from config import Config
 
@@ -19,8 +21,11 @@ class UI:
         self.scale = self.tile_size / self.rect[1]
         self.new_rect = (int(self.rect[0] * self.scale), int(self.rect[1] * self.scale))
         self.sprites = [pygame.image.load("hex_{0}.png".format(i)) for i in range(5)]
+        self.transparent_sprites = [sprite.copy() for sprite in self.sprites]
         for i in range(5):
             self.sprites[i] = pygame.transform.scale(self.sprites[i], self.new_rect)
+            self.transparent_sprites[i] = pygame.transform.scale(self.transparent_sprites[i], self.new_rect)
+            self.transparent_sprites[i].set_alpha(128)
 
         self.colors = [(64, 160, 64), (224, 224, 224), (32, 32, 32), (224, 64, 64), (64, 64, 224)]
         self.comp_colors = [(32, 32, 32), (16, 16, 16), (224, 224, 224), (224, 224, 224), (224, 224, 224)]
@@ -29,14 +34,20 @@ class UI:
         self.font = pygame.font.SysFont(config.font, self.font_size)
         self.display = pygame.display.set_mode((self.game_width, self.game_height), 0, 32)
 
-    def get_position(self, pos):
-        x, y = pos[0] - self.x_offset, pos[1] - self.y_offset
+    def get_position(self, position):
+        x, y = position[0] - self.x_offset, position[1] - self.y_offset
         return round((50 * x) / (42 * self.tile_size)), round((84 * y - 50 * x) / (84 * self.tile_size))
 
     def get_real_position(self, tile):
         x, y = tile
         return self.x_offset + x * 0.84 * self.tile_size - self.new_rect[0] / 2, \
             self.y_offset + (y + 0.50 * x) * self.tile_size - self.new_rect[1] / 2
+
+    def get_direction(self, starting_position, ending_position):
+        x1, y1 = self.get_real_position(starting_position)
+        x2, y2 = self.get_real_position(ending_position)
+        angle = round(3 / math.pi * math.atan2(y2 - y1, x2 - x1) + 6.5) % 6
+        return DIRECTIONS[angle]
 
     def calculate_offsets(self, board):
         xs = []
@@ -51,16 +62,20 @@ class UI:
         self.x_offset = (self.game_width - (max_x - min_x)) / 2 - min_x
         self.y_offset = (self.game_height - (max_y - min_y)) / 2 - min_y
 
-    def draw_board(self, state: State):
+    def draw_board(self, state: State, selection=None):
         pygame.draw.rect(self.display, self.colors[state.turn], (0, 0, self.game_width, self.game_height))
 
         for tile in state.board:
-            self.draw_tile(tile, state.board(tile))
+            if tile in selection:
+                self.draw_tile(tile, Tile(0, 0))
+                self.draw_tile(tile, state.board(tile), transparent=True)
+            else:
+                self.draw_tile(tile, state.board(tile))
 
-    def draw_tile(self, tile, pair):
+    def draw_tile(self, tile, pair, transparent=False):
         x, y = self.get_real_position(tile)
         player, quantity = pair
-        self.display.blit(self.sprites[player], (x, y))
+        self.display.blit(self.transparent_sprites[player] if transparent else self.sprites[player], (x, y))
 
         if quantity > 0:
             label = self.font.render(str(quantity), True, self.comp_colors[player])

@@ -1,5 +1,7 @@
 import random
 
+DIRECTIONS = [(1, -1), (1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1)]
+
 
 class Tile:
     player = 0
@@ -35,8 +37,30 @@ class Board:
                 adjacent_tiles.append(new_tile)
         return adjacent_tiles
 
+    def get_tiles_in_direction(self, starting_tile,  direction):
+        tile = (starting_tile[0] + direction[0], starting_tile[1] + direction[1])
+        tiles = []
+        while self.is_tile_free(tile):
+            tiles.append(tile)
+            tile = (tile[0] + direction[0], tile[1] + direction[1])
+
+        return tiles
+
     def is_tile_boundary(self, tile):
         return len(self.get_adjacent_tiles(tile)) < 6
+
+    def is_tile_free(self, tile):
+        if tile in self._board:
+            return self._board[tile].player == 0
+
+        return False
+
+    def is_tile_movable(self, tile):
+        if tile in self._board:
+            player, value = self._board[tile]
+            return player > 0 and value > 1
+
+        return False
 
     def is_block_inside(self, tile, outside=False):
         x, y = tile
