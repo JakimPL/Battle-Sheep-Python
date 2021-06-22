@@ -68,13 +68,14 @@ class UI:
         self.x_offset = (self.game_width - (max_x - min_x)) / 2 - min_x
         self.y_offset = (self.game_height - (max_y - min_y)) / 2 - min_y
 
-    def draw_board(self, state: State, selection=None):
+    def draw_board(self, state: State, selection=None, offset=0):
         pygame.draw.rect(self.display, self.turn_colors[state.turn], (0, 0, self.game_width, self.game_height))
 
         for tile in state.board:
             if tile in selection:
+                player, value = state.board(tile)
                 self.draw_tile(tile, Tile(0, 0))
-                self.draw_tile(tile, state.board(tile), transparent=True)
+                self.draw_tile(tile, Tile(player, value + offset), transparent=True)
             else:
                 self.draw_tile(tile, state.board(tile))
 
