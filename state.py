@@ -46,7 +46,7 @@ class State:
     def place_initial_stack(self, tile):
         if self.initial_phase and self.board.is_tile_free(tile) and self.board.is_tile_boundary(tile):
             self.board.set(tile, Tile(self.turn, self.stack_size))
-            if self.turn == 1:
+            if self.turn == self.players:
                 self.initial_phase = False
 
             self.next_turn()

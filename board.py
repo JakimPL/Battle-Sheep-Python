@@ -1,5 +1,6 @@
 import random
 from config import Config
+import itertools
 
 DIRECTIONS = [(1, -1), (1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1)]
 
@@ -47,7 +48,8 @@ class Board:
     def get_adjacent_tiles(self, tile, external=False):
         x, y = tile
         adjacent_tiles = []
-        for new_tile in [(x - 1, y + 1), (x - 1, y), (x, y - 1), (x + 1, y), (x, y + 1), (x + 1, y - 1)]:
+        for a, b in DIRECTIONS:
+            new_tile = x + a, y + b
             if (new_tile in self._board) ^ external:
                 adjacent_tiles.append(new_tile)
         return adjacent_tiles
@@ -77,29 +79,37 @@ class Board:
 
         return False
 
-    def is_block_inside(self, tile, outside=False):
-        x, y = tile
-        for i in range(self._block_size):
-            for j in range(self._block_size):
-                if outside ^ ((x + i, y + j) in self._board):
-                    return False
+    def is_block_inside(self, tile, outside=False, transpose=False):
+        tiles = self.get_block(tile, transpose=transpose)
+        for tile in tiles:
+            if outside ^ (tile in self._board):
+                return False
 
         return True
+
+    def get_boundary_blocks(self, tile, transpose=False):
+        x, y = tile
+        b = self._block_size
+        if transpose:
+            return [(x + i, y - b) for i in range(b + 1)] + \
+                    [(x - i, y - b + i) for i in range(1, b + 1)] + \
+                    [(x - b + i, y + 1) for i in range(b + 1)] + \
+                    [(x + i, y + 1 - i) for i in range(1, b + 1)]
+        else:
+            return [(x - b + i + 1, y - b) for i in range(b + 1)] + \
+                   [(x - b, y - b + i + 1) for i in range(b + 1)] + \
+                   [(x + 1, y - b + i) for i in range(1, b + 1)] + \
+                   [(x - b + i, y + 1) for i in range(1, b + 1)]
 
     def get_random_block(self):
         boundary_blocks = set()
         for tile in self._board:
-            if self.is_tile_boundary(tile):
-                x, y = tile
-                block_lists = \
-                    [(x - self._block_size + i + 1, y - self._block_size) for i in range(self._block_size + 1)] + \
-                    [(x - self._block_size, y - self._block_size + i + 1) for i in range(self._block_size + 1)] + \
-                    [(x + 1, y - self._block_size + i) for i in range(1, self._block_size + 1)] + \
-                    [(x - self._block_size + i, y + 1) for i in range(1, self._block_size + 1)]
-
-                for block in block_lists:
-                    if self.is_block_inside(block, outside=False):
-                        boundary_blocks.add(block)
+            for transpose in [False, True]:
+                if self.is_tile_boundary(tile):
+                    block_lists = self.get_boundary_blocks(tile, transpose=transpose)
+                    for block in block_lists:
+                        if self.is_block_inside(block, outside=False, transpose=transpose):
+                            boundary_blocks.add((block, transpose))
 
         return random.choice(list(boundary_blocks))
 
@@ -108,11 +118,11 @@ class Board:
         if blocks % block_tiles != 0:
             raise ValueError('number of blocks is not divisible by the size of the block')
 
-        self.fill_block((0, 0))
+        self.fill_block((0, 0), transpose=(random.random() < 0.5))
         remaining_blocks = blocks - block_tiles
         while remaining_blocks > 0:
-            block = self.get_random_block()
-            self.fill_block(block)
+            block, transpose = self.get_random_block()
+            self.fill_block(block, transpose=transpose)
             remaining_blocks -= block_tiles
 
         if len(self._board) != blocks:
@@ -121,11 +131,19 @@ class Board:
     def set(self, tile, value=Tile(0, 0)):
         self._board[tile] = value
 
-    def fill_block(self, tile, value=Tile(0, 0)):
+    def get_block(self, tile, transpose=False):
         x, y = tile
-        for i in range(self._block_size):
-            for j in range(self._block_size):
-                self.set((x + i, y + j), value)
+        if transpose:
+            tiles = [[(x + i - j, y + j) for i in range(self._block_size)] for j in range(self._block_size)]
+        else:
+            tiles = [[(x + i, y + j) for i in range(self._block_size)] for j in range(self._block_size)]
+
+        return list(itertools.chain.from_iterable(tiles))
+
+    def fill_block(self, tile, value=Tile(0, 0), transpose=False):
+        tiles = self.get_block(tile, transpose=transpose)
+        for tile in tiles:
+            self.set(tile, value)
 
     def is_connected(self):
         pass

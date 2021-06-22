@@ -1,6 +1,6 @@
 {
 	"game": {
-		"players": 1,
+		"players": 4,
 		"stack_size": 16,
 		"block_size": 2
 	},
