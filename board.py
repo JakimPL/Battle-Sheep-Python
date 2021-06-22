@@ -1,6 +1,6 @@
+import itertools
 import random
 from config import Config
-import itertools
 
 DIRECTIONS = [(1, -1), (1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1)]
 
