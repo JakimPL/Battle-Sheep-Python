@@ -7,13 +7,12 @@ class State:
 
     def __init__(self, players=config['players'], board=None, stack_size=config['stack_size']):
         if players < 1:
-            raise ValueError('not enough players')
+            raise ValueError("not enough players")
 
         self.players = players
         self.stack_size = stack_size
 
         self.turn = 0
-        self.initial_phase = True
         self.end = False
         if board is None:
             self.board = Board()
@@ -24,6 +23,33 @@ class State:
         board_size = len(self.board)
         if self.players > board_size:
             raise ValueError("not enough space for players")
+
+        neutral_tiles = [tile for tile in self.board if self.board(tile).player == 0]
+        player_tiles = [tile for tile in self.board if self.board(tile).player > 0]
+        if player_tiles:
+            players = set()
+            board_stack_size = self.board(player_tiles[0]).value
+            self.initial_phase = False
+            max_player = 0
+            for tile in player_tiles:
+                player, value = self.board(tile)
+                players.add(player)
+                if value != board_stack_size:
+                    raise ValueError("uneven stack size: {0} versus {1}".format(value, board_stack_size))
+                if player > max_player:
+                    max_player = player
+
+            players_count = len(players)
+            if players_count != self.players:
+                raise ValueError("wrong number of players: {0} instead of {1}".format(players_count, self.players))
+            if players_count != max_player:
+                raise ValueError("at least one player is not present")
+        else:
+            self.initial_phase = True
+
+        for tile in neutral_tiles:
+            if self.board(tile).value != 0:
+                raise ValueError("there is a neutral tile with non-zero quantity")
 
         self.next_turn()
 

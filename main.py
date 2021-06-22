@@ -11,7 +11,7 @@ pygame.init()
 clock = pygame.time.Clock()
 FPS = 60
 
-state = State()
+state = State(board={(0, 0): (1, 16), (0, 1): (2, 16), (1, 1): (3, 16), (1, 0): (4, 16), (2, 0): (0, 0)})
 ui = UI()
 ui.calculate_offsets(state.board)
 
