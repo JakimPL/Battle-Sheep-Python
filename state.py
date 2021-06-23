@@ -2,6 +2,27 @@ from board import Board, Tile, DIRECTIONS
 from config import Config
 
 
+class Score:
+    def __init__(self):
+        self.tiles = 0
+        self.max_component = 0
+
+    def __iter__(self):
+        return iter((self.tiles, self.max_component))
+
+    def __repr__(self):
+        return "{0}, {1}".format(self.tiles, self.max_component)
+
+    def __eq__(self, other):
+        return self.tiles == other.tiles and self.max_component == other.max_component
+
+    def __lt__(self, other):
+        return self.tiles < other.tiles or (self.tiles == other.tiles and self.max_component < other.max_component)
+
+    def __gt__(self, other):
+        return self.tiles > other.tiles or (self.tiles == other.tiles and self.max_component > other.max_component)
+
+
 class State:
     config = Config('game')
 
@@ -20,11 +41,13 @@ class State:
         else:
             self.board = Board(board)
 
-        board_size = len(self.board)
+        board_size = self.board.get_size()
         if self.players > board_size:
             raise ValueError("not enough space for players")
 
-        neutral_tiles = [tile for tile in self.board if self.board(tile).player == 0]
+        if self.config['check_connectedness'] and self.board.get_connected_component_size() != self.board.get_size():
+            raise ValueError("board is not connected")
+
         player_tiles = [tile for tile in self.board if self.board(tile).player > 0]
         if player_tiles:
             players = set()
@@ -47,11 +70,43 @@ class State:
         else:
             self.initial_phase = True
 
-        for tile in neutral_tiles:
-            if self.board(tile).value != 0:
+        for tile in self.board:
+            player, value = self.board(tile)
+            if value < 0:
+                raise ValueError("negative value of quantity")
+            if player == 0 and value != 0:
                 raise ValueError("there is a neutral tile with non-zero quantity")
+            elif player > 0 and value == 0:
+                raise ValueError("there is a player's tile with zero quantity")
 
+        self.score = self.calculate_score()
+        self.winners = []
         self.next_turn()
+
+    def _end(self):
+        self.board.get_connected_components()
+        self.turn = 0
+        self.end = True
+
+        self.score = self.calculate_score()
+        max_score = max([self.score[score] for score in self.score])
+        self.winners = [player for player in self.score if self.score[player] == max_score]
+
+    def calculate_score(self):
+        counter = {player: Score() for player in range(1, self.players + 1)}
+        for tile in self.board:
+            player, value = self.board(tile)
+            if player > 0:
+                counter[player].tiles += 1
+
+        components = self.board.get_connected_components()
+        for component in components:
+            component_size = len(component)
+            player = self.board(component[0]).player
+            if player > 0 and component_size > counter[player].max_component:
+                counter[player].max_component = component_size
+
+        return counter
 
     def get_possible_moves(self, chosen_tile=None, player=0):
         if player == 0:
@@ -105,6 +160,5 @@ class State:
             else:
                 counter += 1
 
-        self.turn = 0
-        self.end = True
+        self._end()
         return True

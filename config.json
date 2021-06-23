@@ -2,7 +2,8 @@
 	"game": {
 		"players": 4,
 		"stack_size": 16,
-		"block_size": 2
+		"block_size": 2,
+		"check_connectedness": false
 	},
 	"ui": {
 		"font": "Noto Mono",
