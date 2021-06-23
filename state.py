@@ -83,6 +83,14 @@ class State:
         self.winners = []
         self.next_turn()
 
+    def __iter__(self):
+        yield 'stack_size', self.stack_size
+        yield 'players', self.players
+        yield 'turn', self.turn
+        yield 'initial_phase', self.initial_phase
+        yield 'end', self.end
+        yield 'board', self.board.get_list()
+
     def _end(self):
         self.board.get_connected_components()
         self.turn = 0

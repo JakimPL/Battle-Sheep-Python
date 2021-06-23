@@ -1,7 +1,7 @@
 {
 	"game": {
-		"players": 4,
-		"stack_size": 16,
+		"players": 6,
+		"stack_size": 20,
 		"block_size": 2,
 		"check_connectedness": false
 	},

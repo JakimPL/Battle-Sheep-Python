@@ -2,6 +2,7 @@ from board import Tile
 from mouse import Mouse
 from state import State
 from ui import UI
+import json
 import pygame
 import sys
 from pygame import locals
@@ -24,6 +25,8 @@ while True:
     wheel = 0
     for event in pygame.event.get():
         if event.type == locals.QUIT:
+            with open("state.json", 'w') as file:
+                json.dump(dict(state), file, indent=4)
             pygame.quit()
             sys.exit()
         elif event.type == locals.MOUSEWHEEL:

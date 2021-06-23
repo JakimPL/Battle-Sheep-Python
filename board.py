@@ -54,6 +54,13 @@ class Board:
                 adjacent_tiles.append(new_tile)
         return adjacent_tiles
 
+    def get_list(self):
+        board = []
+        for tile in self._board:
+            player, value = self._board[tile]
+            board.append({'tile': [tile[0], tile[1]], 'player': player, 'value': value})
+        return board
+
     def get_size(self):
         return len(self._board)
 
