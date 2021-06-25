@@ -31,9 +31,12 @@ class Game:
         self.ui.calculate_offsets(self.state.board)
         self.mouse = Mouse()
 
-    def save(self, filename="state.json"):
+    def save(self, filename="state.json", replace_brackets=True):
+        data = json.dumps(dict(self.state), indent=4)
+        if replace_brackets:
+            data = data.replace('"(', '[').replace(')"', ']')
+            
         with open(filename, 'w') as file:
-            data = json.dumps(dict(self.state), indent=4)
             file.write(data)
 
     def load(self, filename="state.json"):

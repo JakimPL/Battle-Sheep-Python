@@ -47,7 +47,7 @@ class Board:
         board = []
         for tile in self._board:
             player, value = self._board[tile]
-            board.append({'tile': [tile[0], tile[1]], 'player': player, 'value': value})
+            board.append({'tile': "({0}, {1})".format(tile[0], tile[1]), 'player': player, 'value': value})
         return board
 
     def get_size(self):
