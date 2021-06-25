@@ -1,8 +1,9 @@
 import math
 import pygame
-from board import Tile, DIRECTIONS
+from board import DIRECTIONS
 from config import Config
 from state import State
+from tile import Tile
 
 
 class UI:

@@ -1,13 +1,14 @@
-from board import Tile
-from mouse import Mouse
-from state import State
-from ui import UI
 import json
 import os
 import pygame
 import re
 import sys
 from pygame import locals
+
+from mouse import Mouse
+from state import State
+from tile import Tile
+from ui import UI
 
 
 class Game:
