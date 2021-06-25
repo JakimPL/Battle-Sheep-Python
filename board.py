@@ -16,6 +16,9 @@ class Tile:
     def __iter__(self):
         return iter((self.player, self.value))
 
+    def __repr__(self):
+        return "{0}, {1}".format(self.player, self.value)
+
 
 class Board:
     config = Config('game')

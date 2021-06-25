@@ -57,7 +57,7 @@ class State:
             for tile in player_tiles:
                 player, value = self.board(tile)
                 players.add(player)
-                if value != board_stack_size:
+                if len(player_tiles) == self.players and value != board_stack_size:
                     raise ValueError("uneven stack size: {0} versus {1}".format(value, board_stack_size))
                 if player > max_player:
                     max_player = player

@@ -3,6 +3,7 @@ from mouse import Mouse
 from state import State
 from ui import UI
 import json
+import os
 import pygame
 import re
 import sys
@@ -10,26 +11,47 @@ from pygame import locals
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, load=True):
         pygame.init()
 
+        self.ui = UI()
         self.clock = pygame.time.Clock()
         self.fps = 60
 
-        self.state = State()
-        self.ui = UI()
-        self.ui.calculate_offsets(self.state.board)
+        if load and os.path.isfile("state.json"):
+            self.load()
+        else:
+            self.state = State()
 
         self.stack = 1
         self.selected_tile = None
         self.selection = []
 
+        self.ui.calculate_offsets(self.state.board)
         self.mouse = Mouse()
 
-    def save(self):
-        with open("state.json", 'w') as file:
+    def save(self, filename="state.json"):
+        with open(filename, 'w') as file:
             data = json.dumps(dict(self.state), indent=4)
             file.write(data)
+
+    def load(self, filename="state.json"):
+        with open(filename, 'r') as file:
+            data = json.load(file)
+            stack_size = data['stack_size']
+            players = data['players']
+            turn = data['turn']
+            initial_phase = data['initial_phase']
+            end = data['end']
+            board = {}
+            for tile in data['board']:
+                x, y = tile['tile']
+                board[(x, y)] = Tile(tile['player'], tile['value'])
+
+            self.state = State(players=players, board=board, stack_size=stack_size)
+            self.state.initial_phase = initial_phase
+            self.state.turn = turn
+            self.state.end = end
 
     def quit(self, save=True):
         if save:
