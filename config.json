@@ -1,14 +1,14 @@
 {
 	"game": {
-		"players": 6,
-		"stack_size": 20,
+		"players": 4,
+		"stack_size": 16,
 		"block_size": 2,
 		"check_connectedness": false
 	},
 	"ui": {
 		"font": "Noto Mono",
 		"font_size": 12,
-		"window_size": [1000, 1000],
+		"window_size": [1480, 720],
 		"tile_size": 40,
 		"colors": [[64, 160, 64], [224, 224, 224], [32, 32, 32], [224, 64, 64], [64, 64, 224], [192, 192, 64], [192, 64, 192]],
 		"comp_colors": [[32, 32, 32], [16, 16, 16], [224, 224, 224], [224, 224, 224], [224, 224, 224], [16, 16, 16], [16, 16, 16]],

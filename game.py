@@ -1,9 +1,8 @@
 import json
 import os
-import pygame
-import re
 import sys
-from pygame import locals
+
+from kivy.core.window import Window
 
 from mouse import Mouse
 from state import State
@@ -12,14 +11,13 @@ from ui import UI
 
 
 class Game:
-    def __init__(self, load=True):
-        pygame.init()
+    STATE_FILE = "state.json"
 
-        self.ui = UI()
-        self.clock = pygame.time.Clock()
+    def __init__(self, canvas, load=True):
+        self.ui = UI(canvas)
         self.fps = 60
 
-        if load and os.path.isfile("state.json"):
+        if load and os.path.isfile(self.STATE_FILE):
             self.load()
         else:
             self.state = State()
@@ -31,15 +29,15 @@ class Game:
         self.ui.calculate_offsets(self.state.board)
         self.mouse = Mouse()
 
-    def save(self, filename="state.json", replace_brackets=True):
+    def save(self, filename=STATE_FILE, replace_brackets=True):
         data = json.dumps(dict(self.state), indent=4)
         if replace_brackets:
             data = data.replace('"(', '[').replace(')"', ']')
-            
+
         with open(filename, 'w') as file:
             file.write(data)
 
-    def load(self, filename="state.json"):
+    def load(self, filename=STATE_FILE):
         with open(filename, 'r') as file:
             data = json.load(file)
             stack_size = data['stack_size']
@@ -61,10 +59,10 @@ class Game:
         if save:
             self.save()
 
-        pygame.quit()
         sys.exit()
 
     def frame(self):
+        '''
         wheel = 0
         for event in pygame.event.get():
             if event.type == locals.KEYDOWN:
@@ -78,7 +76,10 @@ class Game:
             elif event.type == locals.MOUSEWHEEL:
                 wheel = event.y
 
-        self.mouse.update(wheel=wheel)
+        #self.mouse.update(wheel=wheel)
+        '''
+
+        Window.bind(mouse_pos=self.mouse.kivy_update_position, on_touch_down=self.mouse.kivy_update_state)
         current_tile = self.ui.get_position(self.mouse.position())
 
         tiles_to_draw = []
@@ -128,5 +129,4 @@ class Game:
         for tile, pair, transparent in tiles_to_draw:
             self.ui.draw_tile(tile, pair, transparent=transparent)
 
-        pygame.display.update()
-        self.clock.tick(self.fps)
+        self.mouse.kivy_frame()
